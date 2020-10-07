@@ -1,1 +1,4 @@
 /resources/credentials.json
+/token.pickle
+/resources/api.txt
+/.idea
