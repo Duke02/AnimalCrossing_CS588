@@ -34,6 +34,7 @@ def get_credentials(filepath: str, cached_location: str = 'token.pickle'):
     :param cached_location: The filepath to the pickled file storing previous credentials from previous runs of the application.
     :return: The credentials accepted by the Google API Service.
     """
+    # A lot of this code is from https://developers.google.com/sheets/api/quickstart/python
     credentials = None
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -81,7 +82,7 @@ def main():
         return
 
     # TODO: Need to figure out the week number of the spreadsheet.
-    # The week number is incremented each time there is a completely different row.
+    # The week number is incremented each time there is a completely empty row.
     structured_data: tp.List[IslandWeekData] = [parse_row(row) for row in rows]
 
 
