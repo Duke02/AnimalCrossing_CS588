@@ -38,3 +38,12 @@ class IslandWeekData:
         self.purchase_price: int = purchase_price
         self.previous_pattern: tp.Union[None, TurnipPattern] = previous_pattern
         self.current_pattern: tp.Union[None, TurnipPattern] = current_pattern
+
+    def predict_current_pattern(self, model):
+        """
+        Predicts the current pattern based on the prices in this sample.
+        TO BE IMPLEMENTED.
+        :param model: The classifier that provides multiple patterns with their confidences.
+        :return: The predicted current pattern.
+        """
+        pass
