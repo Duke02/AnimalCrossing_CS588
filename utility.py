@@ -15,13 +15,24 @@ def _levenshtein_distance(str1: str, str2: str, max_distance: int = -1) -> tp.Tu
     :param max_distance: The function will stop if the distance is over the max_distance. If equal to -1 (the default), the function won't stop early.
     :return: A tuple containing the resulting distance and whether the function was able to fully calculate the metric.
     """
+    # Stop early in case the strings are equal.
     if str1 == str2:
         return 0, True
 
     # This code has been adapted from
     # https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
+
+    # Make the str2 be the shortest string.
     if len(str1) < len(str2):
         return _levenshtein_distance(str2, str1)
+
+    # Stop early in the event that the shortest string
+    # doesn't even have anything in it.
+    if len(str2) == 0:
+        if -1 < max_distance < len(str2):
+            return max_distance, False
+        else:
+            return len(str1), True
 
     previous_row: tp.List[int] = list(range(len(str2) + 1))
     for i, c1 in enumerate(str1):
@@ -34,9 +45,12 @@ def _levenshtein_distance(str1: str, str2: str, max_distance: int = -1) -> tp.Tu
             substitution_cost: int = previous_row[j] + (c1 != c2)
             current_row.append(min(insertion_cost, deletion_cost, substitution_cost))
 
+        # replace previous row.
         previous_row = current_row
 
+        # If we should be worrying about the distance, worry about it
         if max_distance > -1:
+            # Only continue if all of our numbers are not greater than the max distance.
             should_continue: bool = any([n <= max_distance for n in previous_row])
 
             if not should_continue:
