@@ -75,16 +75,19 @@ def get_pattern(pattern_str: str, use_distance_metric: bool = True, max_distance
     :param pattern_str: The possibly dirty pattern string that is in the raw data.
     :param use_distance_metric: If true (default), function will use distance metric in calculations. Won't otherwise.
     :param max_distance: The distance the distance metric will stop at if all values pass this. Default is 4 and won't be used if use_distance_metric is False.
-    :return: The appropriate TurnipPattern for the input string, or Unknown if it cannot be determined.
+    :return: The appropriate TurnipPattern for the input string, Empty if pattern_str is empty, or Unknown if it cannot be determined otherwise.
     """
+    if len(pattern_str) == 0:
+        return TurnipPattern.EMPTY
+
     in_str: str = pattern_str.lower()
 
-    for k, v in _pattern_whitelists:
+    for k, v in _pattern_whitelists.items():
         if in_str in v:
             return k
 
     if use_distance_metric and len(in_str) >= max_distance:
-        for k, v in _pattern_whitelists:
+        for k, v in _pattern_whitelists.items():
             # If any of the distances between the values and the in_str are within the maximum distance,
             # return the key.
             if any([_levenshtein_distance(val, in_str, max_distance=max_distance)[1] for val in v]):

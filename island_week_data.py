@@ -1,13 +1,16 @@
 import typing as tp
 from enum import Enum
 
+import numpy as np
+
 
 class TurnipPattern(Enum):
     UNKNOWN = 'Unknown',
     DECREASING = 'Decreasing',
     RANDOM = 'Random',
     HIGH_SPIKE = 'High Spike',
-    SMALL_SPIKE = 'Small Spike'
+    SMALL_SPIKE = 'Small Spike',
+    EMPTY = 'empty'
 
     def __repr__(self):
         return self.value
@@ -39,6 +42,11 @@ class IslandWeekData:
         self.previous_pattern: tp.Union[None, TurnipPattern] = previous_pattern
         self.current_pattern: tp.Union[None, TurnipPattern] = current_pattern
 
+    def __str__(self):
+        return f'Island {self.island_name} ({self.owner}), W{self.week_num}, Purchase: {self.purchase_price},' + \
+               f' Curr Pattern: {self.current_pattern}, Prev Pattern: {self.previous_pattern}, ' + \
+               f'Prices: [{", ".join([str(price) for price in self.prices])}]'
+
     def predict_current_pattern(self, model):
         """
         Predicts the current pattern based on the prices in this sample.
@@ -47,3 +55,7 @@ class IslandWeekData:
         :return: The predicted current pattern.
         """
         pass
+
+    def to_numpy(self):
+        out: np.ndarray = np.asarray([price - self.purchase_price for price in self.prices])
+        return out
