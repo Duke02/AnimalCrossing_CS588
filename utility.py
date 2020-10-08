@@ -18,34 +18,31 @@ def _levenshtein_distance(str1: str, str2: str, max_distance: int = -1) -> tp.Tu
     if str1 == str2:
         return 0, True
 
-    vector1: tp.List[int] = [i for i in range(len(str1))]
-    vector2: tp.List[int] = [0 for _ in range(len(str2))]
+    # This code has been adapted from
+    # https://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#Python
+    if len(str1) < len(str2):
+        return _levenshtein_distance(str2, str1)
 
-    for i in range(len(str2)):
-        vector2[0] = i + 1
+    previous_row: tp.List[int] = list(range(len(str2) + 1))
+    for i, c1 in enumerate(str1):
+        current_row: tp.List[int] = [i + 1]
+        for j, c2 in enumerate(str2):
+            # j+1 instead of j since previous_row and current_row are one character longer
+            # than str2
+            insertion_cost: int = previous_row[j + 1] + 1
+            deletion_cost: int = current_row[j] + 1
+            substitution_cost: int = previous_row[j] + (c1 != c2)
+            current_row.append(min(insertion_cost, deletion_cost, substitution_cost))
 
-        for j in range(len(str1)):
-            deletion_cost: int = vector1[j + 1]
-            insertion_cost: int = vector2[j] + 1
-
-            substitution_cost: int = vector1[j]
-
-            if str1[i] != str2[j]:
-                substitution_cost += 1
-
-            vector2[j + 1] = min(deletion_cost, insertion_cost, substitution_cost)
-
-        temp: tp.List[int] = vector1[:]
-        vector1 = vector2[:]
-        vector2 = temp[:]
+        previous_row = current_row
 
         if max_distance > -1:
-            should_stop: bool = all([n >= max_distance for n in vector1 + vector2])
+            should_continue: bool = any([n <= max_distance for n in previous_row])
 
-            if should_stop:
+            if not should_continue:
                 return max_distance, False
 
-    return vector1[-1], True
+    return previous_row[-1], True
 
 
 _pattern_whitelists: tp.Dict[TurnipPattern, tp.Set[str]] = {
