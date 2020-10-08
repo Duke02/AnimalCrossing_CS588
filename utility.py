@@ -60,10 +60,10 @@ def _levenshtein_distance(str1: str, str2: str, max_distance: int = -1) -> tp.Tu
 
 
 _pattern_whitelists: tp.Dict[TurnipPattern, tp.Set[str]] = {
-    TurnipPattern.DECREASING: {'decreasing'},
-    TurnipPattern.HIGH_SPIKE: {'high spike', 'big spike', 'sudden spike'},
-    TurnipPattern.SMALL_SPIKE: {'small spike', 'slow spike'},
-    TurnipPattern.RANDOM: {'random'}
+    TurnipPattern.DECREASING: {'decreasing', 'd'},
+    TurnipPattern.HIGH_SPIKE: {'high spike', 'big spike', 'sudden spike', 'bs', 'ls'},
+    TurnipPattern.SMALL_SPIKE: {'small spike', 'slow spike', 'gentle spike', 'ss', 'smol spike', 'gentle', 'small'},
+    TurnipPattern.RANDOM: {'random', 'fluctuating', 'r', 'rd'}
 }
 
 
@@ -83,7 +83,7 @@ def get_pattern(pattern_str: str, use_distance_metric: bool = True, max_distance
         if in_str in v:
             return k
 
-    if use_distance_metric:
+    if use_distance_metric and len(in_str) >= max_distance:
         for k, v in _pattern_whitelists:
             # If any of the distances between the values and the in_str are within the maximum distance,
             # return the key.
