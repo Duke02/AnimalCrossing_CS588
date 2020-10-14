@@ -5,15 +5,15 @@ import numpy as np
 
 
 class TurnipPattern(Enum):
-    UNKNOWN = 'Unknown',
-    DECREASING = 'Decreasing',
-    RANDOM = 'Random',
-    HIGH_SPIKE = 'High Spike',
-    SMALL_SPIKE = 'Small Spike',
-    EMPTY = 'empty'
+    UNKNOWN = ('Unknown', -1)
+    EMPTY = ('empty', 0)
+    DECREASING = ('Decreasing', 1)
+    RANDOM = ('Random', 2)
+    HIGH_SPIKE = ('High Spike', 3)
+    SMALL_SPIKE = ('Small Spike', 4)
 
     def __repr__(self):
-        return self.value
+        return self.value[0]
 
 
 class IslandWeekData:
@@ -62,3 +62,9 @@ class IslandWeekData:
 
     def is_valid(self, min_prices: int) -> bool:
         return len([p for p in self.prices if p]) >= min_prices
+
+    def is_perfect(self) -> bool:
+        return all(self.prices) and \
+               len(self.prices) >= 12 and \
+               (self.current_pattern not in {TurnipPattern.EMPTY, TurnipPattern.UNKNOWN}) and \
+               (self.previous_pattern not in {TurnipPattern.EMPTY, TurnipPattern.UNKNOWN})

@@ -7,7 +7,6 @@ import os.path
 import pickle
 import typing as tp
 
-import numpy as np
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -116,8 +115,9 @@ def main():
                 cleaned_rows.append(row)
                 structured_data.append(parsed_row)
 
-    data: np.ndarray = utility.island_data_to_numpy(structured_data)
-    print(data.shape)
+    training_data, training_labels = utility.get_training_data(structured_data)
+    print(training_data)
+    print(training_labels)
 
 
 if __name__ == '__main__':

@@ -99,5 +99,19 @@ def get_pattern(pattern_str: str, use_distance_metric: bool = True, max_distance
     return TurnipPattern.UNKNOWN
 
 
-def island_data_to_numpy(rows: tp.List[IslandWeekData]) -> np.ndarray:
-    return np.asarray([row.to_numpy() for row in rows if row.is_valid(MIN_NUM_PRICES)])
+def island_data_to_numpy(rows: tp.List[IslandWeekData], is_perfect: bool = False) -> np.ndarray:
+    if is_perfect:
+        return np.asarray([row.to_numpy() for row in rows if row.is_perfect()])
+    else:
+        return np.asarray([row.to_numpy() for row in rows if row.is_valid(MIN_NUM_PRICES)])
+
+
+def island_data_get_current_patterns(rows: tp.List[IslandWeekData], is_perfect: bool = False) -> np.ndarray:
+    if is_perfect:
+        return np.asarray([[row.current_pattern.value[1]] for row in rows if row.is_perfect()])
+    else:
+        return np.asarray([[row.current_pattern.value[1]] for row in rows if row.is_valid(MIN_NUM_PRICES)])
+
+
+def get_training_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarray]:
+    return island_data_to_numpy(rows, is_perfect=True), island_data_get_current_patterns(rows, is_perfect=True)
