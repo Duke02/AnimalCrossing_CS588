@@ -7,19 +7,15 @@ import os.path
 import pickle
 import typing as tp
 
+import numpy as np
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
 # Only perform read only operations on the spreadsheet.
 import utility
+from constants import *
 from island_week_data import IslandWeekData, TurnipPattern
-
-SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
-
-# The ID and range of the community data spreadsheet.
-SPREADSHEET_ID = '1hMmewPJvXw-tmabvccC0nWJdN7zw3aQIQzN3EQ9is6g'
-CELL_RANGE = 'Archive!C:S'
 
 
 def get_api_key(filepath: str) -> str:
@@ -64,7 +60,7 @@ def get_raw_data(service, spreadsheet_id: str = SPREADSHEET_ID, range: str = CEL
     return result.get('values', [])
 
 
-def parse_row(row: tp.List[str], week_number: int) -> IslandWeekData:
+def parse_row(row: tp.List[str], week_number: int) -> tp.Union[None, IslandWeekData]:
     """
     Parses the row directly from the spreadsheet and restructures it into an IslandWeekData
     :param row: the sample row directly from the spreadsheet that contains the owner, the island, the prices, the purchase price, and the patterns (previous and current)
@@ -77,11 +73,15 @@ def parse_row(row: tp.List[str], week_number: int) -> IslandWeekData:
             raise Exception('Purchase price is empty.')
         purchase_price: int = int(row[2])
 
-        raw_prices: tp.List[tp.Union[str, None]] = [price if len(price) > 0 else None for price in row[3:12]]
+        end_of_prices: int = 15
+
+        raw_prices: tp.List[tp.Union[str, None]] = [price if len(price) > 0 else None for price in row[3:end_of_prices]]
         prices: tp.List[tp.Union[None, int]] = [int(p) if type(p) == str and p.isdigit() else None for p in raw_prices]
 
-        current_pattern: TurnipPattern = utility.get_pattern(row[12]) if len(row) > 12 else TurnipPattern.EMPTY
-        previous_pattern: TurnipPattern = utility.get_pattern(row[13]) if len(row) > 13 else TurnipPattern.EMPTY
+        current_pattern: TurnipPattern = utility.get_pattern(row[end_of_prices]) if len(
+            row) > end_of_prices else TurnipPattern.EMPTY
+        previous_pattern: TurnipPattern = utility.get_pattern(row[end_of_prices + 1]) if len(row) > (
+                end_of_prices + 1) else TurnipPattern.EMPTY
 
         return IslandWeekData(owner, island_name, week_number, prices, purchase_price, previous_pattern,
                               current_pattern)
@@ -102,9 +102,6 @@ def main():
         print('No data found.')
         return
 
-    # TODO: Need to figure out the week number of the spreadsheet.
-    # The week number is incremented each time there is a completely empty row.
-
     structured_data: tp.List[IslandWeekData] = []
     week_num: int = 0
 
@@ -119,15 +116,8 @@ def main():
                 cleaned_rows.append(row)
                 structured_data.append(parsed_row)
 
-    bad_rows: tp.List[tp.Tuple[int, IslandWeekData]] = [(i, row) for i, row in enumerate(structured_data) if
-                                                        row.current_pattern == TurnipPattern.UNKNOWN and
-                                                        row.previous_pattern == TurnipPattern.UNKNOWN]
-
-    print("Printing bad rows.")
-    [print(' | '.join(cleaned_rows[i])) for i, _ in bad_rows]
-
-    print('Printing good rows.')
-    [print(row) for row in structured_data]
+    data: np.ndarray = utility.island_data_to_numpy(structured_data)
+    print(data.shape)
 
 
 if __name__ == '__main__':

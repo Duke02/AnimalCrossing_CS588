@@ -3,7 +3,10 @@ Utility file to help determine different aspects about the data.
 """
 import typing as tp
 
-from island_week_data import TurnipPattern
+import numpy as np
+
+from constants import MIN_NUM_PRICES
+from island_week_data import TurnipPattern, IslandWeekData
 
 
 def _levenshtein_distance(str1: str, str2: str, max_distance: int = -1) -> tp.Tuple[int, bool]:
@@ -94,3 +97,7 @@ def get_pattern(pattern_str: str, use_distance_metric: bool = True, max_distance
                 return k
 
     return TurnipPattern.UNKNOWN
+
+
+def island_data_to_numpy(rows: tp.List[IslandWeekData]) -> np.ndarray:
+    return np.asarray([row.to_numpy() for row in rows if row.is_valid(MIN_NUM_PRICES)])

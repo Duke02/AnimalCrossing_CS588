@@ -59,3 +59,6 @@ class IslandWeekData:
     def to_numpy(self):
         out: np.ndarray = np.asarray([price - self.purchase_price for price in self.prices])
         return out
+
+    def is_valid(self, min_prices: int) -> bool:
+        return len([p for p in self.prices if p]) >= min_prices
