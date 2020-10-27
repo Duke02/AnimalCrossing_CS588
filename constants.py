@@ -1,3 +1,5 @@
+from os.path import join
+
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
 # The ID and range of the community data spreadsheet.
@@ -14,3 +16,5 @@ RANDOM_STATE: int = 13
 SVM_ITERATIONS: int = int(1000 ** 1.5)
 
 CV: int = 3
+
+MODEL_FILEPATH: str = join('.', 'models')

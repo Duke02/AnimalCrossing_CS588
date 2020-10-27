@@ -1,11 +1,13 @@
 """
 Utility file to help determine different aspects about the data.
 """
+import os
+import pickle
 import typing as tp
 
 import numpy as np
 
-from constants import MIN_NUM_PRICES
+from constants import MIN_NUM_PRICES, MODEL_FILEPATH
 from island_week_data import TurnipPattern, IslandWeekData
 
 
@@ -119,3 +121,13 @@ def get_training_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.
 
 def get_all_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarray]:
     return island_data_to_numpy(rows, is_perfect=False), island_data_get_current_patterns(rows, is_perfect=False)
+
+
+def save_model(filename: str, model):
+    with open(os.path.join(MODEL_FILEPATH, filename), 'wb') as f:
+        pickle.dump(model, f)
+
+
+def load_model(filename: str):
+    with open(os.path.join(MODEL_FILEPATH, filename), 'rb') as f:
+        return pickle.load(f)
