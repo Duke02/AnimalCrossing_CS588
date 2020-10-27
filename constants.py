@@ -6,3 +6,7 @@ CELL_RANGE = 'Archive!C:S'
 
 # The minimum number of prices required to have been gathered to make a decision.
 MIN_NUM_PRICES: int = 4
+
+# The random state to use across all models.
+# 13 is my favorite number, thus its selection.
+RANDOM_STATE: int = 13

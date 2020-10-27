@@ -57,7 +57,7 @@ class IslandWeekData:
         pass
 
     def to_numpy(self):
-        out: np.ndarray = np.asarray([price - self.purchase_price for price in self.prices])
+        out: np.ndarray = np.asarray([price - self.purchase_price if price else (10 * -5) for price in self.prices])
         return out
 
     def is_valid(self, min_prices: int) -> bool:

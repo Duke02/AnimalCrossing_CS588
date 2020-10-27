@@ -115,3 +115,7 @@ def island_data_get_current_patterns(rows: tp.List[IslandWeekData], is_perfect: 
 
 def get_training_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarray]:
     return island_data_to_numpy(rows, is_perfect=True), island_data_get_current_patterns(rows, is_perfect=True)
+
+
+def get_all_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarray]:
+    return island_data_to_numpy(rows, is_perfect=False), island_data_get_current_patterns(rows, is_perfect=False)

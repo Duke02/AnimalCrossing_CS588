@@ -59,7 +59,7 @@ def get_raw_data(service, spreadsheet_id: str = SPREADSHEET_ID, range: str = CEL
     return result.get('values', [])
 
 
-def parse_row(row: tp.List[str], week_number: int) -> tp.Union[None, IslandWeekData]:
+def parse_row(row: tp.List[str], week_number: int, quiet: bool = True) -> tp.Union[None, IslandWeekData]:
     """
     Parses the row directly from the spreadsheet and restructures it into an IslandWeekData
     :param row: the sample row directly from the spreadsheet that contains the owner, the island, the prices, the purchase price, and the patterns (previous and current)
@@ -74,7 +74,7 @@ def parse_row(row: tp.List[str], week_number: int) -> tp.Union[None, IslandWeekD
 
         end_of_prices: int = 15
 
-        raw_prices: tp.List[tp.Union[str, None]] = [price if len(price) > 0 else None for price in row[3:end_of_prices]]
+        raw_prices: tp.List[tp.Union[str, None]] = [row[i] if i < len(row) else None for i in range(3, end_of_prices)]
         prices: tp.List[tp.Union[None, int]] = [int(p) if type(p) == str and p.isdigit() else None for p in raw_prices]
 
         current_pattern: TurnipPattern = utility.get_pattern(row[end_of_prices]) if len(
@@ -85,28 +85,29 @@ def parse_row(row: tp.List[str], week_number: int) -> tp.Union[None, IslandWeekD
         return IslandWeekData(owner, island_name, week_number, prices, purchase_price, previous_pattern,
                               current_pattern)
     except Exception as e:
-        print(f'Parsing row caused an exception: {e}')
-        print(f'Row is: {row}')
-        print(f'Returning {None}')
+        if not quiet:
+            print(f'Parsing row caused an exception: {e}')
+            print(f'Row is: {row}')
+            print(f'Returning {None}')
         return None
 
 
-def main():
+def get_structured_data():
     credentials = get_credentials('resources/credentials.json')
     service = build('sheets', 'v4', credentials=credentials)
 
-    rows: list = get_raw_data(service)
+    output: list = get_raw_data(service)
 
-    if not rows:
+    if not output:
         print('No data found.')
-        return
+        return []
 
     structured_data: tp.List[IslandWeekData] = []
     week_num: int = 0
 
     cleaned_rows: tp.List[tp.List[str]] = []
 
-    for row in rows:
+    for row in output:
         if all([len(cell) < 1 for cell in row]):
             week_num += 1
         else:
@@ -114,11 +115,11 @@ def main():
             if parsed_row:
                 cleaned_rows.append(row)
                 structured_data.append(parsed_row)
-
-    training_data, training_labels = utility.get_training_data(structured_data)
-    print(training_data)
-    print(training_labels)
+    return structured_data
 
 
 if __name__ == '__main__':
-    main()
+    rows = get_structured_data()
+    x, y = utility.get_all_data(rows)
+    print(x.shape)
+    print(y.shape)
