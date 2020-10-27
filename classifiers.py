@@ -1,24 +1,52 @@
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC, LinearSVC
 
-from constants import RANDOM_STATE
+from constants import RANDOM_STATE, SVM_ITERATIONS
 
 
 def get_linear_svm_classifier():
+    params = {'linearsvc__C': np.arange(0.25, 1.0, .05),
+              'linearsvc__fit_intercept': [True, False],
+              'linearsvc__tol': np.arange(10 ** -5, 5 * 10 ** -4, 25 * 10 ** -6)}
+
     # need to scale data using Standard Scaler
-    return make_pipeline([StandardScaler(), LinearSVC(random_state=RANDOM_STATE)])
+    return 'Linear SVM', \
+           make_pipeline(StandardScaler(), LinearSVC(random_state=RANDOM_STATE, max_iter=SVM_ITERATIONS)), \
+           params
 
 
 def get_rbf_svm_classifier():
-    return make_pipeline([StandardScaler(), SVC(kernel='rbf', random_state=RANDOM_STATE)])
+    params = {
+        'svc__gamma': ['scale', 'auto'],
+        'svc__shrinking': [True, False],
+        'svc__tol': np.arange(.5 * 10 ** -4, .5 * 10 ** -2, 5 * 10 ** -3),
+        'svc__C': np.arange(.25, 2.5)
+    }
+
+    return 'RBF SVM', \
+           make_pipeline(StandardScaler(), SVC(kernel='rbf', random_state=RANDOM_STATE, max_iter=SVM_ITERATIONS)), \
+           params
 
 
 def get_naive_bayes_classifier():
-    return GaussianNB()
+    params = {
+        'var_smoothing': np.arange(10 ** -10, 10 ** -8)
+    }
+    return 'Naive Bayes', GaussianNB(), params
 
 
 def get_random_forest_classifier():
-    return RandomForestClassifier(random_state=RANDOM_STATE)
+    params = {
+        'ccp_alpha': np.arange(0, 5 * 10 ** -2),
+        'class_weight': [None, 'balanced', 'balanced_subsample'],
+        'max_leaf_nodes': [None] + list(range(2, 10)),
+        'max_features': ['auto', None, 'sqrt'] + list(np.arange(.1, .75, .05)),
+        'max_depth': [None] + list(range(3, 20)),
+        'criterion': ['gini', 'entropy'],
+        'n_estimators': np.arange(10, 150, 5)
+    }
+    return 'Random Forest', RandomForestClassifier(random_state=RANDOM_STATE), params

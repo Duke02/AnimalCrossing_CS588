@@ -10,3 +10,7 @@ MIN_NUM_PRICES: int = 4
 # The random state to use across all models.
 # 13 is my favorite number, thus its selection.
 RANDOM_STATE: int = 13
+
+SVM_ITERATIONS: int = int(1000 ** 1.5)
+
+CV: int = 3
