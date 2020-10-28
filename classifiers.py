@@ -41,12 +41,9 @@ def get_naive_bayes_classifier():
 
 def get_random_forest_classifier():
     params = {
-        'ccp_alpha': np.arange(0, .05, .009),
-        'class_weight': [None, 'balanced', 'balanced_subsample'],
-        'max_leaf_nodes': [None] + list(range(2, 10)),
-        'max_features': ['auto', None, 'sqrt'] + list(np.arange(.1, .75, .15)),
-        'max_depth': [None] + list(range(3, 20, 3)),
-        'criterion': ['gini', 'entropy'],
-        'n_estimators': np.arange(10, 150, 15)
+        'ccp_alpha': np.arange(0, .04, .01),
+        'max_features': ['auto', None, 'sqrt'] + list(np.arange(.1, .75, .225)),
+        'max_depth': [None] + list(range(3, 10, 2)),
+        'n_estimators': [10, 50, 100, 150]
     }
     return 'Random Forest', RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=N_JOBS), params
