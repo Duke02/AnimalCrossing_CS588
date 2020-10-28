@@ -9,9 +9,9 @@ from constants import RANDOM_STATE, SVM_ITERATIONS, N_JOBS
 
 
 def get_linear_svm_classifier():
-    params = {'linearsvc__C': np.arange(0.25, 1.0, .05),
+    params = {'linearsvc__C': np.arange(0.125, 0.375, .025),
               'linearsvc__fit_intercept': [True, False],
-              'linearsvc__tol': np.arange(10 ** -5, 5 * 10 ** -4, 25 * 10 ** -6)}
+              'linearsvc__tol': np.arange(.000001, .00001, .000005)}
 
     # need to scale data using Standard Scaler
     return 'Linear SVM', \
@@ -23,8 +23,8 @@ def get_rbf_svm_classifier():
     params = {
         'svc__gamma': ['scale', 'auto'],
         'svc__shrinking': [True, False],
-        'svc__tol': np.arange(.5 * 10 ** -4, .5 * 10 ** -2, 5 * 10 ** -3),
-        'svc__C': np.arange(.25, 2.5)
+        'svc__tol': np.arange(.00001, .00005, .000005),
+        'svc__C': np.arange(.125, .375, .025)
     }
 
     return 'RBF SVM', \
@@ -34,16 +34,16 @@ def get_rbf_svm_classifier():
 
 def get_naive_bayes_classifier():
     params = {
-        'var_smoothing': np.arange(10 ** -10, 10 ** -8)
+        'var_smoothing': np.arange(10 ** -12, 10 ** -10, 5 * 10 ** - 12)
     }
     return 'Naive Bayes', GaussianNB(), params
 
 
 def get_random_forest_classifier():
     params = {
-        'ccp_alpha': np.arange(0, .04, .01),
+        'ccp_alpha': np.arange(.01, .03, .005),
         'max_features': ['auto', None, 'sqrt'] + list(np.arange(.1, .75, .225)),
-        'max_depth': [None] + list(range(3, 10, 2)),
-        'n_estimators': [10, 50, 100, 150]
+        'max_depth': [None] + list(range(3, 11, 2)),
+        'n_estimators': list(range(50, 150, 10))
     }
     return 'Random Forest', RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=N_JOBS), params
