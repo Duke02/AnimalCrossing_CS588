@@ -52,14 +52,15 @@ def get_credentials(filepath: str, cached_location: str = 'token.pickle'):
     return credentials
 
 
-def get_raw_data(service, spreadsheet_id: str = SPREADSHEET_ID, range: str = CELL_RANGE) -> tp.List:
-    # Call the Sheets API
+def get_raw_data(service, get_community_data: bool = True) -> tp.List:
     sheet = service.spreadsheets()
-    result = sheet.values().get(spreadsheetId=spreadsheet_id, range=range).execute()
+    spreadsheet_id: str = MADDOX_KNIGHT_SPREADSHEET_ID if get_community_data else PERSONAL_SPREADSHEET_ID
+    cell_range: str = MADDOX_KNIGHT_CELL_RANGE if get_community_data else PERSONAL_CELL_RANGE
+    result = sheet.values().get(spreadsheetId=spreadsheet_id, range=cell_range).execute()
     return result.get('values', [])
 
 
-def parse_row(row: tp.List[str], week_number: int, quiet: bool = True) -> tp.Union[None, IslandWeekData]:
+def parse_community_row(row: tp.List[str], week_number: int, quiet: bool = True) -> tp.Union[None, IslandWeekData]:
     """
     Parses the row directly from the spreadsheet and restructures it into an IslandWeekData
     :param row: the sample row directly from the spreadsheet that contains the owner, the island, the prices, the purchase price, and the patterns (previous and current)
@@ -92,30 +93,75 @@ def parse_row(row: tp.List[str], week_number: int, quiet: bool = True) -> tp.Uni
         return None
 
 
-def get_structured_data():
-    credentials = get_credentials('resources/credentials.json')
-    service = build('sheets', 'v4', credentials=credentials)
+def parse_personal_row(row: tp.List[str], week_number: int, quiet: bool = True) -> tp.Union[None, IslandWeekData]:
+    try:
+        owner: str = row[0]
 
-    output: list = get_raw_data(service)
+        if len(row[1]) < 1:
+            raise Exception('Purchase price is empty.')
+        purchase_price: int = int(row[1])
+
+        start_of_prices: int = 4
+        n_prices: int = 12
+        end_of_prices: int = start_of_prices + n_prices
+
+        raw_prices: tp.List[tp.Union[str, None]] = [row[i] if i < len(row) else None for i in
+                                                    range(start_of_prices, end_of_prices)]
+        if not quiet:
+            print(raw_prices)
+        prices: tp.List[tp.Union[None, int]] = [int(p) if type(p) == str and p.isdigit() else None for p in raw_prices]
+        if not quiet:
+            print(prices)
+
+        current_pattern: TurnipPattern = utility.get_pattern(row[end_of_prices]) if len(
+            row) > end_of_prices else TurnipPattern.EMPTY
+        previous_pattern: TurnipPattern = utility.get_pattern(row[end_of_prices + 1]) if len(row) > (
+                end_of_prices + 1) else TurnipPattern.EMPTY
+
+        return IslandWeekData(owner, '', week_number, prices, purchase_price, previous_pattern,
+                              current_pattern)
+    except Exception as e:
+        if not quiet:
+            print(f'Parsing row caused an exception: {e}')
+            print(f'Row is: {row}')
+            print(f'Returning {None}')
+        return None
+
+
+def parse_row(row: tp.List[str], week_number: int, quiet: bool = True,
+              is_community_data: bool = True) -> tp.Union[None, IslandWeekData]:
+    if is_community_data:
+        return parse_community_row(row, week_number, quiet=quiet)
+    else:
+        return parse_personal_row(row, week_number, quiet=quiet)
+
+
+def get_data(service, get_community_data=True, quiet: bool = True):
+    output: list = get_raw_data(service, get_community_data=get_community_data)
 
     if not output:
-        print('No data found.')
+        print('No community data found.')
         return []
 
     structured_data: tp.List[IslandWeekData] = []
     week_num: int = 0
 
-    cleaned_rows: tp.List[tp.List[str]] = []
-
     for row in output:
         if all([len(cell) < 1 for cell in row]):
             week_num += 1
         else:
-            parsed_row: tp.Union[None, IslandWeekData] = parse_row(row, week_num)
+            parsed_row: tp.Union[None, IslandWeekData] = parse_row(row, week_num, is_community_data=get_community_data,
+                                                                   quiet=quiet)
             if parsed_row:
-                cleaned_rows.append(row)
                 structured_data.append(parsed_row)
     return structured_data
+
+
+def get_structured_data():
+    credentials = get_credentials('resources/credentials.json')
+    service = build('sheets', 'v4', credentials=credentials)
+
+    return get_data(service) + get_data(service, get_community_data=False)
 
 
 if __name__ == '__main__':
