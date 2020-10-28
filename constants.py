@@ -18,3 +18,5 @@ SVM_ITERATIONS: int = int(1000 ** 1.5)
 CV: int = 3
 
 MODEL_FILEPATH: str = join('.', 'models')
+
+N_JOBS: int = -1

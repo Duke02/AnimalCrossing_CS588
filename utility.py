@@ -1,6 +1,7 @@
 """
 Utility file to help determine different aspects about the data.
 """
+import datetime as dt
 import os
 import pickle
 import typing as tp
@@ -123,7 +124,8 @@ def get_all_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarr
     return island_data_to_numpy(rows, is_perfect=False), island_data_get_current_patterns(rows, is_perfect=False)
 
 
-def save_model(filename: str, model):
+def save_model(model_name: str, model):
+    filename: str = f'{model_name}_{dt.date.today()}.mdl'
     with open(os.path.join(MODEL_FILEPATH, filename), 'wb') as f:
         pickle.dump(model, f)
 

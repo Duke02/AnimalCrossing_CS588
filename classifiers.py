@@ -5,7 +5,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC, LinearSVC
 
-from constants import RANDOM_STATE, SVM_ITERATIONS
+from constants import RANDOM_STATE, SVM_ITERATIONS, N_JOBS
 
 
 def get_linear_svm_classifier():
@@ -41,12 +41,12 @@ def get_naive_bayes_classifier():
 
 def get_random_forest_classifier():
     params = {
-        'ccp_alpha': np.arange(0, 5 * 10 ** -2),
+        'ccp_alpha': np.arange(0, .05, .009),
         'class_weight': [None, 'balanced', 'balanced_subsample'],
         'max_leaf_nodes': [None] + list(range(2, 10)),
-        'max_features': ['auto', None, 'sqrt'] + list(np.arange(.1, .75, .05)),
-        'max_depth': [None] + list(range(3, 20)),
+        'max_features': ['auto', None, 'sqrt'] + list(np.arange(.1, .75, .15)),
+        'max_depth': [None] + list(range(3, 20, 3)),
         'criterion': ['gini', 'entropy'],
-        'n_estimators': np.arange(10, 150, 5)
+        'n_estimators': np.arange(10, 150, 15)
     }
-    return 'Random Forest', RandomForestClassifier(random_state=RANDOM_STATE), params
+    return 'Random Forest', RandomForestClassifier(random_state=RANDOM_STATE, n_jobs=N_JOBS), params
