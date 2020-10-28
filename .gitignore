@@ -3,3 +3,4 @@
 /resources/api.txt
 /.idea
 .ipynb_checkpoints
+*.mdl
