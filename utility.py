@@ -116,7 +116,7 @@ def island_data_get_current_patterns(rows: tp.List[IslandWeekData], is_perfect: 
         return np.asarray([[row.current_pattern.value[1]] for row in rows if row.is_valid(MIN_NUM_PRICES)])
 
 
-def get_training_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarray]:
+def get_perfect_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarray]:
     return island_data_to_numpy(rows, is_perfect=True), island_data_get_current_patterns(rows, is_perfect=True)
 
 
@@ -124,12 +124,19 @@ def get_all_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarr
     return island_data_to_numpy(rows, is_perfect=False), island_data_get_current_patterns(rows, is_perfect=False)
 
 
-def save_model(model_name: str, model):
-    filename: str = f'{model_name}_{dt.date.today()}.mdl'
-    with open(os.path.join(MODEL_FILEPATH, filename), 'wb') as f:
+def save_model(model_name: str, model) -> tp.Tuple[str, str]:
+    date_str: str = dt.datetime.now().strftime('%Y_%m_%d__%H%M%S')
+    filename: str = f'{model_name.replace(" ", "")}_{date_str}.mdl'
+    file_path: str = os.path.join(MODEL_FILEPATH, filename)
+    with open(file_path, 'wb') as f:
         pickle.dump(model, f)
+    return file_path, filename
 
 
 def load_model(filename: str):
     with open(os.path.join(MODEL_FILEPATH, filename), 'rb') as f:
         return pickle.load(f)
+
+
+def get_max_cv(y: np.ndarray) -> int:
+    return min(np.unique(y, return_counts=True)[1])
