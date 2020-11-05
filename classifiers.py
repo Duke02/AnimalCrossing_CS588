@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.svm import SVC, LinearSVC
 
 from constants import RANDOM_STATE, SVM_ITERATIONS, N_JOBS
@@ -15,7 +15,7 @@ def get_linear_svm_classifier():
 
     # need to scale data using Standard Scaler
     return 'Linear SVM', \
-           make_pipeline(StandardScaler(), LinearSVC(random_state=RANDOM_STATE, max_iter=SVM_ITERATIONS)), \
+           make_pipeline(MinMaxScaler(), LinearSVC(random_state=RANDOM_STATE, max_iter=SVM_ITERATIONS)), \
            params
 
 
@@ -28,7 +28,7 @@ def get_rbf_svm_classifier():
     }
 
     return 'RBF SVM', \
-           make_pipeline(StandardScaler(), SVC(kernel='rbf', random_state=RANDOM_STATE, max_iter=SVM_ITERATIONS)), \
+           make_pipeline(MinMaxScaler(), SVC(kernel='rbf', random_state=RANDOM_STATE, max_iter=SVM_ITERATIONS)), \
            params
 
 
@@ -42,7 +42,7 @@ def get_naive_bayes_classifier():
 def get_random_forest_classifier():
     params = {
         'ccp_alpha': np.arange(.01, .03, .005),
-        'max_features': ['auto', None, 'sqrt'] + list(np.arange(.1, .75, .225)),
+        'max_features': ['auto', None, 'sqrt'],
         'max_depth': [None] + list(range(3, 11, 2)),
         'n_estimators': list(range(50, 150, 10))
     }

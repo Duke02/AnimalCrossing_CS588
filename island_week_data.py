@@ -54,11 +54,21 @@ class IslandWeekData:
         :param model: The classifier that provides multiple patterns with their confidences.
         :return: The predicted current pattern.
         """
-        pass
+        self.current_pattern = model.predict(self.to_numpy())[0]
+        return self
+
+    def get_pattern_modifier(self) -> float:
+        if not self.has_patterns_populated():
+            return 5.0 / 4.0
+        return float(self.previous_pattern.value[1]) / 4.0
 
     def to_numpy(self):
-        out: np.ndarray = np.asarray([price - self.purchase_price if price else (10 * -5) for price in self.prices])
+        out: np.ndarray = np.asarray([price - self.purchase_price if price else (10 ** -5) for price in self.prices]) \
+                          * self.get_pattern_modifier()
         return out
+
+    def to_numpy_regression(self):
+        return self.to_numpy() * self.get_pattern_modifier()
 
     def is_valid(self, min_prices: int) -> bool:
         return len([p for p in self.prices if p]) >= min_prices
@@ -66,5 +76,8 @@ class IslandWeekData:
     def is_perfect(self) -> bool:
         return all(self.prices) and \
                len(self.prices) >= 12 and \
-               (self.current_pattern not in {TurnipPattern.EMPTY, TurnipPattern.UNKNOWN}) and \
+               self.has_patterns_populated()
+
+    def has_patterns_populated(self) -> bool:
+        return (self.current_pattern not in {TurnipPattern.EMPTY, TurnipPattern.UNKNOWN}) and \
                (self.previous_pattern not in {TurnipPattern.EMPTY, TurnipPattern.UNKNOWN})

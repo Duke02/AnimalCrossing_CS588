@@ -125,7 +125,7 @@ def get_all_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarr
 
 
 def save_model(model_name: str, model) -> tp.Tuple[str, str]:
-    date_str: str = dt.datetime.now().strftime('%Y_%m_%d__%H%M%S')
+    date_str: str = dt.datetime.now().strftime('%Y%m%d_%H%M%S')
     filename: str = f'{model_name.replace(" ", "")}_{date_str}.mdl'
     file_path: str = os.path.join(MODEL_FILEPATH, filename)
     with open(file_path, 'wb') as f:
@@ -140,3 +140,7 @@ def load_model(filename: str):
 
 def get_max_cv(y: np.ndarray) -> int:
     return min(np.unique(y, return_counts=True)[1])
+
+
+def populate_current_pattern(rows: tp.List[IslandWeekData], best_classifier) -> tp.List[IslandWeekData]:
+    return [row.predict_current_pattern(best_classifier) if not row.has_patterns_populated() else row for row in rows]
