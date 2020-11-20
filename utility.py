@@ -2,13 +2,15 @@
 Utility file to help determine different aspects about the data.
 """
 import datetime as dt
+import json
 import os
 import pickle
+import re
 import typing as tp
 
 import numpy as np
 
-from constants import MIN_NUM_PRICES, MODEL_FILEPATH
+from constants import MIN_NUM_PRICES, MODEL_FILEPATH, RESULTS_SAVE_PATH
 from island_week_data import TurnipPattern, IslandWeekData
 
 
@@ -144,3 +146,26 @@ def get_max_cv(y: np.ndarray) -> int:
 
 def populate_current_pattern(rows: tp.List[IslandWeekData], best_classifier) -> tp.List[IslandWeekData]:
     return [row.predict_current_pattern(best_classifier) if not row.has_patterns_populated() else row for row in rows]
+
+
+def save_results(results):
+    date_str: str = dt.datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename: str = f'results_{date_str}.json'
+    file_path: str = os.path.join(RESULTS_SAVE_PATH, filename)
+    with open(file_path, 'w') as f:
+        json.dump(results, f, indent=4)
+    print(f'Saved results to {file_path}')
+
+
+def load_results(filename: str):
+    with open(os.path.join(RESULTS_SAVE_PATH, filename), 'r') as f:
+        return json.load(f)
+
+
+def get_most_recent_results() -> str:
+    regex_obj = re.compile(r'results_(\d{4}\d{2}\d{2}_\d{2}\d{2}\d{2})\.json', re.RegexFlag.ASCII)
+    result_files: tp.List[str] = os.listdir(RESULTS_SAVE_PATH)
+    matches: tp.List[tp.Tuple[re.Match, str]] = [(regex_obj.match(file), file) for file in result_files]
+    dates: tp.List[tp.Tuple[dt.datetime, str]] = [(dt.datetime.strptime(match.group(1), '%Y%m%d_%H%M%S'), file) for
+                                                  match, file in matches]
+    return sorted(dates, key=lambda df: df[0])[-1][1]

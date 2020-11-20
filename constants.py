@@ -25,3 +25,5 @@ CV: int = 3
 MODEL_FILEPATH: str = join('.', 'models')
 
 N_JOBS: int = -1
+
+RESULTS_SAVE_PATH: str = join('.', 'results')
