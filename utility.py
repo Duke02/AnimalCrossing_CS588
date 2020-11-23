@@ -143,6 +143,15 @@ def load_model(filename: str):
         return pickle.load(f)
 
 
+def get_most_recent_model_filename(model_name: str) -> str:
+    actual_name_in_path: str = model_name.replace(" ", "")
+    regex_obj = re.compile(r'([A-Za-z]+)_(\d{4}\d{2}\d{2}_\d{2}\d{2}\d{2}).mdl', re.RegexFlag.ASCII)
+    model_files: tp.List[str] = [f for f in os.listdir(MODEL_FILEPATH) if actual_name_in_path in f]
+    matches: tp.List[tp.Tuple[re.Match, str]] = [(regex_obj.match(f), f) for f in model_files]
+    dates: tp.List[tp.Tuple[dt.datetime, str]] = [(dt.datetime.strptime(match.group(2), '%Y%m%d_%H%M%S'), f) for match, f in matches if match]
+    return sorted(dates, key=lambda d: d[0])[-1][1]
+
+
 def get_max_cv(y: np.ndarray) -> int:
     return min(np.unique(y, return_counts=True)[1])
 
