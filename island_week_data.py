@@ -63,8 +63,7 @@ class IslandWeekData:
         return float(self.previous_pattern.value[1]) / 4.0
 
     def to_numpy(self):
-        out: np.ndarray = np.asarray([price - self.purchase_price if price else (10 ** -5) for price in self.prices]) \
-                          * self.get_pattern_modifier()
+        out: np.ndarray = np.asarray([price - self.purchase_price if price else (10 ** -5) for price in self.prices])
         return out
 
     def to_numpy_regression(self):

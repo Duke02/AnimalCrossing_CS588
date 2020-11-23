@@ -70,7 +70,7 @@ def _levenshtein_distance(str1: str, str2: str, max_distance: int = -1) -> tp.Tu
 _pattern_whitelists: tp.Dict[TurnipPattern, tp.Set[str]] = {
     TurnipPattern.DECREASING: {'decreasing', 'd'},
     TurnipPattern.HIGH_SPIKE: {'high spike', 'big spike', 'sudden spike', 'bs', 'ls'},
-    TurnipPattern.SMALL_SPIKE: {'small spike', 'slow spike', 'gentle spike', 'ss', 'smol spike', 'gentle', 'small'},
+    TurnipPattern.SMALL_SPIKE: {'small spike', 'slow spike', 'gentle spike', 'ss', 'smol spike', 'gentle', 'small', 'ls 100%', 'smol spike :o'},
     TurnipPattern.RANDOM: {'random', 'fluctuating', 'r', 'rd'}
 }
 
@@ -104,11 +104,12 @@ def get_pattern(pattern_str: str, use_distance_metric: bool = True, max_distance
     return TurnipPattern.UNKNOWN
 
 
-def island_data_to_numpy(rows: tp.List[IslandWeekData], is_perfect: bool = False) -> np.ndarray:
+def island_data_to_numpy(rows: tp.List[IslandWeekData], is_perfect: bool = False) -> tp.Tuple[np.ndarray, tp.List[IslandWeekData]]:
     if is_perfect:
-        return np.asarray([row.to_numpy() for row in rows if row.is_perfect()])
+        out_rows = [row for row in rows if row.is_perfect()]
     else:
-        return np.asarray([row.to_numpy() for row in rows if row.is_valid(MIN_NUM_PRICES)])
+        out_rows = [row for row in rows if row.is_valid(MIN_NUM_PRICES)]
+    return np.asarray([row.to_numpy() for row in out_rows]), out_rows
 
 
 def island_data_get_current_patterns(rows: tp.List[IslandWeekData], is_perfect: bool = False) -> np.ndarray:
@@ -118,12 +119,14 @@ def island_data_get_current_patterns(rows: tp.List[IslandWeekData], is_perfect: 
         return np.asarray([[row.current_pattern.value[1]] for row in rows if row.is_valid(MIN_NUM_PRICES)])
 
 
-def get_perfect_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarray]:
-    return island_data_to_numpy(rows, is_perfect=True), island_data_get_current_patterns(rows, is_perfect=True)
+def get_perfect_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, tp.List[IslandWeekData], np.ndarray]:
+    rows_np, pruned_rows = island_data_to_numpy(rows, is_perfect=True)
+    return rows_np, pruned_rows, island_data_get_current_patterns(rows, is_perfect=True)
 
 
-def get_all_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, np.ndarray]:
-    return island_data_to_numpy(rows, is_perfect=False), island_data_get_current_patterns(rows, is_perfect=False)
+def get_all_data(rows: tp.List[IslandWeekData]) -> tp.Tuple[np.ndarray, tp.List[IslandWeekData], np.ndarray]:
+    rows_np, pruned_rows = island_data_to_numpy(rows, is_perfect=False)
+    return rows_np, pruned_rows, island_data_get_current_patterns(rows, is_perfect=False)
 
 
 def save_model(model_name: str, model) -> tp.Tuple[str, str]:
